@@ -22,7 +22,8 @@ function Borrow() {
 
   const handleAddProposal = () => {
       setAddClicked(true);
-  }; 
+  };
+  // get loan total record from db 
   const getLoanInfo = async(userId)=>  {
     await API.get("auth", `/api/borrow/stats/?userId=${userId}`,{
     headers: { "Content-Type": "application/json" },
@@ -48,6 +49,7 @@ function Borrow() {
     })();
   }, []);
   let _user:any={}
+  // fetch the user borrows proposals 
   const getProposals = async () => {
     setLoadProposals(true);
     let data = localStorage.getItem('userData');
@@ -70,6 +72,8 @@ function Borrow() {
       handleFilter(clickedFilter);
     }
 }, [callSpinnerFlag]);
+
+// filter action 
   const handleFilter = (filter) => {
       let data;
      
@@ -97,6 +101,7 @@ function Borrow() {
   };
   const wrapperRef = useRef(null);
   useOutsideAlerter(wrapperRef);
+  // loading till fetch data
   const handleCallSpinner=async()=>{
     await getProposals();
   setCallSpinnerFlag(!callSpinnerFlag);

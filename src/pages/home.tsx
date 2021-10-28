@@ -7,6 +7,7 @@ import { Row, Col, Tabs, Tab } from "react-bootstrap";
 import strings from "../localization/localization";
 import Footer from "../components/footer";
 
+// home page holder
 function Home() {
   const [investText, setInvestText] = useState("");
   const [borrowText, setBorrowText] = useState("");
@@ -17,6 +18,7 @@ function Home() {
     (async () => {
       const language: any = localStorage.getItem("language");
       if (language) {
+        //set the localization static headers value
         strings.setLanguage(language);
         setInvestText(strings.invest);
         setBorrowText(strings.borrow);
@@ -25,6 +27,8 @@ function Home() {
       }
     })();
   }, []);
+
+  // this func to clear state after switching between demo and use the normal state
   const removeClass = () => {
     let tooltip = document.getElementsByClassName("dln-poppver-tooltip");
     if (tooltip) {
@@ -34,6 +38,7 @@ function Home() {
       }
     }
   };
+  // switch between tabs
   const handleSelectTab=(key,e)=>{
     setSelectedKey(key);
     removeClass()

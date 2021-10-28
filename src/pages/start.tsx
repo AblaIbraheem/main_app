@@ -10,18 +10,16 @@ import strings from "../localization/localization";
 function Start() {
   let { mfi }: any = useParams();
   useEffect(() => {
+    
     const language: any = localStorage.getItem("language");
     if (language) {
       strings.setLanguage(language);
       setSelectedLanguage(language);
     } else {
+      // english is the default language 
       localStorage.setItem("language", "en");
     }
     getMFIData(mfi)
-    // if (!mfi) {
-  
-    //   setEnterAPI(true);
-    // }
   }, []);
   const [enterAPI, setEnterAPI] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
@@ -29,6 +27,7 @@ function Start() {
   const [welcomeMsg, setWelcomeMsg] = useState("");
 
   const getMFIData = async (mfi) => {
+    // get the MFI info and welcome message then save the MFI data on the local storage
     const mfiData = await API.get("auth", "/api/mfi", {
       headers: { "Content-Type": "application/json" },
       queryStringParameters: { name: mfi?mfi:"roi" },
@@ -44,6 +43,7 @@ function Start() {
       }
     });
   };
+  //select language func
   const handleSelectLanguage = (e) => {
     localStorage.removeItem("language");
     localStorage.setItem("language", e.target.value);

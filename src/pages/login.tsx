@@ -20,6 +20,7 @@ function Login() {
   const [loginError, setLoginError] = useState("");
   const [loading, setLoading] = useState(false);
 
+// login button action
   const handleClick = async () => {
     try {
       setLoading(true);
@@ -98,6 +99,7 @@ function Login() {
     }
   }, []);
   const [enterAPI, setEnterAPI] = useState(false);
+  // fetch  mfi data
   const getMFIData = async (mfi) => {
     const mfiData = await API.get("auth", "/api/mfi", {
       headers: { "Content-Type": "application/json" },
@@ -112,6 +114,7 @@ function Login() {
       }
     });
   };
+  // detect inputs changes func
   const handleChange = (e) => {
     const { value, name } = e.target;
     const { inputs } = state;

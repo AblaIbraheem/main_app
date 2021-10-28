@@ -15,6 +15,8 @@ function Register() {
   const { user }: any = useUserState();
   const [isClickable , setClickable] = useState(true)
   const [loading, setLoading] = useState(false);
+
+  // create profile button action 
   const handleClick = async () => {
     setShowErrors(true);
     try{
@@ -31,12 +33,14 @@ function Register() {
           return
         }
         setLoading(true)
+        //Verify that the user exists on cognito or not
         const user = await checkIsUserExist(state.inputs.email ,state.inputs.phoneNumber )
        if(user)  {
           setLoading(false)
+          //this user is already exist 
          return
         } 
-        //congnito saving
+        //cognito saving
   
         const registeredUser = await Auth.signUp({
           username: state.inputs.phoneNumber.trim().startsWith("+") ? state.inputs.phoneNumber.trim().toLowerCase() : "+" + state.inputs.phoneNumber.trim().toLowerCase(),
@@ -135,7 +139,7 @@ function Register() {
       }      
     }    
   };
-
+// Privacy Policy checkbox action
   const handleCheckboxChange = (e: any) => {
     const value = e.target.checked;
     const { name } = e.target;
@@ -169,6 +173,7 @@ function Register() {
   let { mfi }: any = useParams();
 
   const [enterAPI, setEnterAPI] = useState(false);
+  // fetch the MFI data
   const getMFIData = async (mfi) => {
     const mfiData = await API.get("auth", "/api/mfi", {
       headers: { "Content-Type": "application/json" },

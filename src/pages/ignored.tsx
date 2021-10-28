@@ -23,6 +23,7 @@ function Ignored() {
   const handleAddProposal = () => {
       setAddClicked(true);
   }; 
+    // get loan total record from db 
   const getLoanInfo = async(userId)=>  {
     await API.get("auth", `/api/borrow/stats/?userId=${userId}`,{
     headers: { "Content-Type": "application/json" },

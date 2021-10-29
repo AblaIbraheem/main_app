@@ -3,14 +3,13 @@ import Card from "../layout";
 import Menu from "../components/menu";
 import Footer from "../components/footer";
 import { Link, useParams } from "react-router-dom";
-import { API } from "aws-amplify";
 import { Row, Col, Spinner } from "react-bootstrap";
 import strings from "../localization/localization";
+import {getMFIData} from '../API/api'
 {}
 function Start() {
   let { mfi }: any = useParams();
   useEffect(() => {
-    
     const language: any = localStorage.getItem("language");
     if (language) {
       strings.setLanguage(language);
@@ -19,30 +18,23 @@ function Start() {
       // english is the default language 
       localStorage.setItem("language", "en");
     }
-    getMFIData(mfi)
+    handleMfi()
   }, []);
   const [enterAPI, setEnterAPI] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [slogan, setSlogan] = useState("");
   const [welcomeMsg, setWelcomeMsg] = useState("");
 
-  const getMFIData = async (mfi) => {
-    // get the MFI info and welcome message then save the MFI data on the local storage
-    const mfiData = await API.get("auth", "/api/mfi", {
-      headers: { "Content-Type": "application/json" },
-      queryStringParameters: { name: mfi?mfi:"roi" },
-    }).then((response) => {
-      localStorage.removeItem("mfiData");
-      if (response) {
-        localStorage.setItem("mfiData", JSON.stringify(response));
-        setSlogan(response.slogan);
+  const handleMfi = async()=>{
+    const response:any =  await getMFIData(mfi)    
+    if (response){
+       setSlogan(response.slogan);
         setWelcomeMsg(response.welcomeMessage);
         setEnterAPI(true);
       } else {
         setEnterAPI(true);
       }
-    });
-  };
+  }
   //select language func
   const handleSelectLanguage = (e) => {
     localStorage.removeItem("language");

@@ -427,7 +427,7 @@ let strings = new LocalizedStrings({
     manageCampaigns: 'Manage the Campaigns',
     campaignTitle: "Campaign Title",
     campaignUrl: "Campaign URL",
-    campaignSec: "Campaign desc"
+    campaignDesc: "Campaign desc"
   },
   be: {
     pending: 'বিচারাধীন',

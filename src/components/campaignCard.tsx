@@ -282,7 +282,7 @@ function CampaignCard({ data, isAdd, CallAddProposalCanceled, callLoading , relo
                     <Form.Control
                       type="text"
                       as="textarea"
-                      placeholder={strings.campaignSec}
+                      placeholder={strings.campaignDesc}
                       name="desc"
                       maxLength={256}
                       onChange={(e) => {

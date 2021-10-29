@@ -6,7 +6,8 @@ import { API, Auth } from "aws-amplify";
 import Menu from "../components/menu";
 import strings from "../localization/localization";
 import Footer from "../components/footer";
-
+import { getMFIData } from '../API/api';
+import UserAuthApi from '../API/userAuthApi'
 function Login() {
   let history: any = useHistory();
 
@@ -27,6 +28,7 @@ function Login() {
       let phoneNumber = state.inputs.phoneNumber.trim().startsWith("+")
         ? state.inputs.phoneNumber.trim().toLowerCase()
         : "+" + state.inputs.phoneNumber.trim().toLowerCase();
+      // login user in cognito
       const currentUser = await Auth.signIn(phoneNumber, state.inputs.password);
       if (currentUser.challengeName === "NEW_PASSWORD_REQUIRED") {
         const location = {
@@ -57,10 +59,7 @@ function Login() {
           setLoading(false);
           history.push(location);
         } else {
-          const userData = await API.get("auth", "/api/auth/", {
-            headers: { "Content-Type": "application/json" },
-            queryStringParameters: { username: currentUser.attributes.sub },
-          });
+          const userData = await UserAuthApi().loginUser(currentUser.attributes.sub)
           if (userData) {
             localStorage.removeItem("userData");
             localStorage.setItem("userData", JSON.stringify(userData.data));
@@ -91,7 +90,7 @@ function Login() {
     }
     localStorage.removeItem("userData");
     if (mfi) {
-      getMFIData(mfi);
+      handleMfi();
     } else {
       setEnterAPI(true);
       localStorage.removeItem("mfiData");
@@ -99,21 +98,15 @@ function Login() {
     }
   }, []);
   const [enterAPI, setEnterAPI] = useState(false);
-  // fetch  mfi data
-  const getMFIData = async (mfi) => {
-    const mfiData = await API.get("auth", "/api/mfi", {
-      headers: { "Content-Type": "application/json" },
-      queryStringParameters: { name: mfi },
-    }).then((response) => {
-      localStorage.removeItem("mfiData");
-      if (response) {
-        localStorage.setItem("mfiData", JSON.stringify(response));
-        setEnterAPI(true);
-      } else {
-        setEnterAPI(true);
-      }
-    });
-  };
+  // fetch mfi data
+  const handleMfi = async () => {
+    const response: any = await getMFIData(mfi)
+    if (response) {
+      setEnterAPI(true);
+    } else {
+      setEnterAPI(true);
+    }
+  }
   // detect inputs changes func
   const handleChange = (e) => {
     const { value, name } = e.target;

@@ -9,24 +9,30 @@ const UserAuthApi = () => {
                 headers: header,
                 queryStringParameters: { email: email, phone: phone },
             });
-            console.log(isUser , 'isUser isUser')
             return isUser
         },
-        registerNewUser: async (firstName , lastName , phone , email , bio, userName) => {
-            const newUser =  await API.post(apiName, `/api/users`, {
+        registerNewUser: async (firstName, lastName, phone, email, bio, userName) => {
+            const newUser = await API.post(apiName, `/api/users`, {
                 headers: {},
                 body: {
-                  firstName: firstName,
-                  lastName: lastName,
-                  phone: phone.trim().startsWith("+") ? phone.trim().toLowerCase() : "+" + phone.trim().toLowerCase(),
-                  email: email,
-                  bio: bio,
-                  username: userName,
+                    firstName: firstName,
+                    lastName: lastName,
+                    phone: phone.trim().startsWith("+") ? phone.trim().toLowerCase() : "+" + phone.trim().toLowerCase(),
+                    email: email,
+                    bio: bio,
+                    username: userName,
                 },
-              })
-              return newUser            
+            })
+            return newUser
+        },
+        loginUser: async (userName) => {
+            const userData = await API.get(apiName, "/api/auth/", {
+                headers: header,
+                queryStringParameters: { username: userName },
+            });
+            return userData
         }
 
     }
 }
-export default  UserAuthApi
+export default UserAuthApi

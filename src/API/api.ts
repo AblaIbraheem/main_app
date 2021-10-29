@@ -1,11 +1,12 @@
 
 import { API } from "aws-amplify";
+const header = { "Content-Type": "application/json" }
 
 export async function getMFIData(mfi) {
     // get the MFI info and welcome message then save the MFI data on the local storage
     return new Promise(function (responseValue, error) {
         API.get("auth", "/api/mfi", {
-            headers: { "Content-Type": "application/json" },
+            headers: header,
             queryStringParameters: { name: mfi ? mfi : "roi" },
         }).then((response) => {
             localStorage.removeItem("mfiData");
@@ -19,6 +20,34 @@ export async function getMFIData(mfi) {
     })
 }
 
+export async function getLoanInfo(userId) {
+    return new Promise(function (responseValue, error) {
+        API.get("auth", `/api/borrow/stats/?userId=${userId}`, {
+            headers: header,
+        }).then((response) => {
+            if (response) {
+                responseValue(response)
+            } else {
+                error(false)
+            }
+        });
+    })
+}
 
+export async function getProposalsByUserAddress(address ,userId) {
+    // get the MFI info and welcome message then save the MFI data on the local storage
+    return new Promise(function (responseValue, error) {
+        API.get("auth", "/api/borrow/proposalsByUserAddress",{
+            headers: header,
+            queryStringParameters: { address: address, userId: userId },
+        }).then((response) => {
+            if (response) {
+                responseValue(response)
+            } else {
+                error(false)
+            }
+        });
+    })
+}
 
 

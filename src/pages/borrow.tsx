@@ -1,13 +1,12 @@
-import React, { Fragment, useState, useEffect,useRef } from "react";
+import React, { Fragment, useState, useEffect, useRef } from "react";
 import { Row, Col, Spinner } from "react-bootstrap";
 import bankIcon from "../Assets/Images/icons/bank.png";
 import SingleProposal from "../components/singleProposal";
-import { API } from "aws-amplify";
 import FilterationBar from "../components/filterationBar";
-import  { useOutsideAlerter  } from '../Helpers'
+import { useOutsideAlerter } from '../Helpers'
 import { useUserState } from "contexts/UserAuthContext";
 import strings from "../localization/localization";
-
+import { getLoanInfo, getProposalsByUserAddress } from '../API/api'
 function Borrow() {
   const { user }: any = useUserState();
   const [addClicked, setAddClicked] = useState(false);
@@ -15,96 +14,88 @@ function Borrow() {
   const [filteredProposals, setFilteredProposals] = useState([]);
   const [loadProposals, setLoadProposals] = useState(false);
   const [clickedFilter, setClickedFilter] = useState();
-  const [userData, setUserData]:any = useState();
+  const [userData, setUserData]: any = useState();
   const [callSpinnerFlag, setCallSpinnerFlag] = useState(false);
-  const [totalFunded , setTotalFunded] = useState(0)
-  const [totalRepaid , setTotalRepaid] = useState(0)
+  const [totalFunded, setTotalFunded] = useState(0)
+  const [totalRepaid, setTotalRepaid] = useState(0)
 
   const handleAddProposal = () => {
-      setAddClicked(true);
+    setAddClicked(true);
   };
-  // get loan total record from db 
-  const getLoanInfo = async(userId)=>  {
-    await API.get("auth", `/api/borrow/stats/?userId=${userId}`,{
-    headers: { "Content-Type": "application/json" },
 
-  }).then((response) => {
-    if (response) {
-      if (response.success) {
-        setTotalFunded(response.data.funded.amount)
-        setTotalRepaid(response.data.paid)
-      }
-    } else {
-    }
-  });
-}
   useEffect(() => {
     (async () => {
       const language: any = localStorage.getItem("language");
       if (language) {
         strings.setLanguage(language);
       }
-      getProposals();
+      getProposalsAndLoanInfo();
 
     })();
   }, []);
-  let _user:any={}
-  // fetch the user borrows proposals 
-  const getProposals = async () => {
+  let _user: any = {}
+  // fetch the user borrows loan info and proposals 
+  const getProposalsAndLoanInfo = async () => {
     setLoadProposals(true);
     let data = localStorage.getItem('userData');
-    if(data){
+    if (data) {
       setUserData(JSON.parse(data));
-      _user=JSON.parse(data);
+      _user = JSON.parse(data);
     }
-    getLoanInfo(_user.id)
-    const proposals = await API.get("auth", "/api/borrow/proposalsByUserAddress", {
-      headers: { "Content-Type": "application/json" },
-      queryStringParameters: { address: _user.id,userId:_user.id},
-    });
+    // get loan total record from db 
+    const response: any = await getLoanInfo(_user.id)
+    if (response) {
+      if (response.success) {
+        setTotalFunded(response.data.funded.amount)
+        setTotalRepaid(response.data.paid)
+      } else {
+      }
+    }
+    //fetch proposals by user id
+    const proposals: any = await getProposalsByUserAddress(_user.id,_user.id)
 
-    setProposals(proposals.data.filter(item=>item.status!==6));
-    setFilteredProposals(proposals.data.filter(item=>item.status!==6));
+    setProposals(proposals.data.filter(item => item.status !== 6));
+    setFilteredProposals(proposals.data.filter(item => item.status !== 6));
     setLoadProposals(false);
   };
   useEffect(() => {
-    if(clickedFilter){
+    if (clickedFilter) {
       handleFilter(clickedFilter);
     }
-}, [callSpinnerFlag]);
+  }, [callSpinnerFlag]);
 
-// filter action 
+  // filter action 
   const handleFilter = (filter) => {
-      let data;
-     
-      setLoadProposals(true);
-      if (filter == "drafted") {
-        data = proposals.filter((prop: any) => prop.status === 1);
-      } else if (filter == "published") {
-        data = proposals.filter((prop: any) => prop.status === 2);
-      } else if (filter == "locked") {
-        data = proposals.filter((prop: any) => prop.status === 3);
-      } else if (filter == "baked") {
-        data = proposals.filter((prop: any) => prop.status === 4);
-      } else if (filter == "funded") {
-        data = proposals.filter((prop: any) => prop.status === 5);
-      } else {
-        data = proposals;
-      }
-      setClickedFilter(filter);
-      setTimeout(function() {
-        setFilteredProposals(data);
-        setLoadProposals(false);
-      });
-      
+    let data;
+
+    setLoadProposals(true);
+    if (filter == "drafted") {
+      data = proposals.filter((prop: any) => prop.status === 1);
+    } else if (filter == "published") {
+      data = proposals.filter((prop: any) => prop.status === 2);
+    } else if (filter == "locked") {
+      data = proposals.filter((prop: any) => prop.status === 3);
+    } else if (filter == "baked") {
+      data = proposals.filter((prop: any) => prop.status === 4);
+    } else if (filter == "funded") {
+      data = proposals.filter((prop: any) => prop.status === 5);
+    } else {
+      data = proposals;
+    }
+    setClickedFilter(filter);
+    setTimeout(function () {
+      setFilteredProposals(data);
+      setLoadProposals(false);
+    });
+
 
   };
   const wrapperRef = useRef(null);
   useOutsideAlerter(wrapperRef);
   // loading till fetch data
-  const handleCallSpinner=async()=>{
-    await getProposals();
-  setCallSpinnerFlag(!callSpinnerFlag);
+  const handleCallSpinner = async () => {
+    await getProposalsAndLoanInfo();
+    setCallSpinnerFlag(!callSpinnerFlag);
   }
   return (
     <Fragment>
@@ -140,7 +131,7 @@ function Borrow() {
                 </Col>
                 <Col className="align-self-center text-right col-auto">
                   <span className="app-text-blue font-weight-bolder mr-1">
-                    {totalFunded} 
+                    {totalFunded}
                   </span>
                   <span className="app-currency-label">$</span>
                 </Col>
@@ -161,8 +152,8 @@ function Borrow() {
               </Row>
             </Col>
           </Row>
-          <FilterationBar parentClickedFilter={clickedFilter} isAddShow={true} isDraftShow={true} handleAddButton={handleAddProposal} handleFilter={handleFilter} isShowRepaid={false}/>
-         {addClicked && (
+          <FilterationBar parentClickedFilter={clickedFilter} isAddShow={true} isDraftShow={true} handleAddButton={handleAddProposal} handleFilter={handleFilter} isShowRepaid={false} />
+          {addClicked && (
             <Row>
               <Col>
                 <SingleProposal
@@ -188,14 +179,14 @@ function Borrow() {
                 </Col>
               </Row>
             ))}
-                   {filteredProposals&&filteredProposals.length<=0 &&
-               
-               <Row className='mt-5'>
-                 <Col>
-                 <h4>{strings.noDataToShow}</h4>
-                 </Col>
-               </Row>
-             }
+          {filteredProposals && filteredProposals.length <= 0 &&
+
+            <Row className='mt-5'>
+              <Col>
+                <h4>{strings.noDataToShow}</h4>
+              </Col>
+            </Row>
+          }
         </div>
       )}
     </Fragment>

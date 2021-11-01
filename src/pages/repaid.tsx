@@ -1,68 +1,22 @@
-import React, { Fragment, useState, useEffect,useRef } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { Row, Col, Spinner } from "react-bootstrap";
 import bankIcon from "../Assets/Images/icons/bank.png";
 import SingleProposal from "../components/singleProposal";
-import { API } from "aws-amplify";
-import  { useOutsideAlerter  } from '../Helpers'
-import { useUserState } from "contexts/UserAuthContext";
 import strings from "../localization/localization";
 
-function Repaid() {
-  const { user }: any = useUserState();
-  const [proposals, setProposals] = useState([]);
+function Repaid({handleCallSpinner , passProposals, totalFunded , totalRepaid}) {;
+  const [proposals, setProposals] = useState(passProposals.filter(item=>item.status===6));
   const [loadProposals, setLoadProposals] = useState(false);
-  const [callSpinnerFlag, setCallSpinnerFlag] = useState(false);
-  const [totalFunded , setTotalFunded] = useState(0)
-  const [totalRepaid , setTotalRepaid] = useState(0)
- 
-  const getLoanInfo = async(userId)=>  {
-    await API.get("auth", `/api/borrow/stats/?userId=${userId}`,{
-    headers: { "Content-Type": "application/json" },
 
-  }).then((response) => {
-
-    if (response) {
-      if (response.success) {
-        setTotalFunded(response.data.funded.amount)
-        setTotalRepaid(response.data.paid)
-      }
-    } else {
-    }
-  });
-}
   useEffect(() => {
     (async () => {
       const language: any = localStorage.getItem("language");
       if (language) {
         strings.setLanguage(language);
       }
-      getProposals();
-
     })();
   }, []);
-  let _user:any={}
-  const getProposals = async () => {
-    setLoadProposals(true);
-    let data = localStorage.getItem('userData');
-    if(data){
-      _user=JSON.parse(data);
-    }
-    getLoanInfo(_user.id)
-    const proposals = await API.get("auth", "/api/borrow/proposalsByUserAddress", {
-      headers: { "Content-Type": "application/json" },
-      queryStringParameters: { address: _user.id,userId:_user.id},
-    });
 
-    setProposals(proposals.data.filter(item=>item.status===6));
-    setLoadProposals(false);
-  };
-
-  const wrapperRef = useRef(null);
-  useOutsideAlerter(wrapperRef);
-  const handleCallSpinner=async()=>{
-    await getProposals();
-  setCallSpinnerFlag(!callSpinnerFlag);
-  }
   return (
     <Fragment>
       {loadProposals ? (
@@ -82,7 +36,7 @@ function Repaid() {
           </Col>
         </Row>
       ) : (
-        <div ref={wrapperRef}>
+        <div>
           <Row className="justify-content-center app-inner-page app-inner-page-tab" >
             <Col xl={12} lg={12} md={12} sm={12} className="card app-card">
               <div className="app-card-title d-flex align-self-center mt-3 justify-content-center">

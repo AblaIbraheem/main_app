@@ -1,23 +1,19 @@
-import React, { Fragment, useState, useEffect, useRef } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { Row, Col, Spinner } from "react-bootstrap";
 import bankIcon from "../Assets/Images/icons/bank.png";
 import SingleProposal from "../components/singleProposal";
 import FilterationBar from "../components/filterationBar";
-import { useOutsideAlerter } from '../Helpers'
 import { useUserState } from "contexts/UserAuthContext";
 import strings from "../localization/localization";
-import { getLoanInfo, getProposalsByUserAddress } from '../API/api'
-function Borrow() {
+
+function Borrow({handleCallSpinner, passProposals, totalFunded , totalRepaid}) {
   const { user }: any = useUserState();
   const [addClicked, setAddClicked] = useState(false);
-  const [proposals, setProposals] = useState([]);
-  const [filteredProposals, setFilteredProposals] = useState([]);
+  const [proposals, setProposals] = useState(passProposals.filter(item => item.status !== 6));
+  const [filteredProposals, setFilteredProposals] = useState(passProposals.filter(item => item.status !== 6));
   const [loadProposals, setLoadProposals] = useState(false);
   const [clickedFilter, setClickedFilter] = useState();
-  const [userData, setUserData]: any = useState();
   const [callSpinnerFlag, setCallSpinnerFlag] = useState(false);
-  const [totalFunded, setTotalFunded] = useState(0)
-  const [totalRepaid, setTotalRepaid] = useState(0)
 
   const handleAddProposal = () => {
     setAddClicked(true);
@@ -29,35 +25,10 @@ function Borrow() {
       if (language) {
         strings.setLanguage(language);
       }
-      getProposalsAndLoanInfo();
 
     })();
   }, []);
-  let _user: any = {}
-  // fetch the user borrows loan info and proposals 
-  const getProposalsAndLoanInfo = async () => {
-    setLoadProposals(true);
-    let data = localStorage.getItem('userData');
-    if (data) {
-      setUserData(JSON.parse(data));
-      _user = JSON.parse(data);
-    }
-    // get loan total record from db 
-    const response: any = await getLoanInfo(_user.id)
-    if (response) {
-      if (response.success) {
-        setTotalFunded(response.data.funded.amount)
-        setTotalRepaid(response.data.paid)
-      } else {
-      }
-    }
-    //fetch proposals by user id
-    const proposals: any = await getProposalsByUserAddress(_user.id,_user.id)
 
-    setProposals(proposals.data.filter(item => item.status !== 6));
-    setFilteredProposals(proposals.data.filter(item => item.status !== 6));
-    setLoadProposals(false);
-  };
   useEffect(() => {
     if (clickedFilter) {
       handleFilter(clickedFilter);
@@ -90,13 +61,7 @@ function Borrow() {
 
 
   };
-  const wrapperRef = useRef(null);
-  useOutsideAlerter(wrapperRef);
-  // loading till fetch data
-  const handleCallSpinner = async () => {
-    await getProposalsAndLoanInfo();
-    setCallSpinnerFlag(!callSpinnerFlag);
-  }
+
   return (
     <Fragment>
       {loadProposals ? (
@@ -116,7 +81,7 @@ function Borrow() {
           </Col>
         </Row>
       ) : (
-        <div ref={wrapperRef}>
+        <div>
           <Row className="justify-content-center app-inner-page app-inner-page-tab" >
             <Col xl={12} lg={12} md={12} sm={12} className="card app-card">
               <div className="app-card-title d-flex align-self-center mt-3 justify-content-center">
